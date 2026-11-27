@@ -136,7 +136,11 @@ export function openImport(root: HTMLElement, store: Store, onDone: (id: string)
   };
   const syncMode = () => modeBtns.forEach((b) => b.classList.toggle('active', b.dataset.mode === mode));
 
-  const process = async () => {
+  /** Lần xử lý gần nhất; lưu / làm mượt chờ nó xong để không bị bấm hụt. */
+  let current: Promise<void> = Promise.resolve();
+  const process = () => (current = runProcess());
+  const settled = async () => { let c; do { c = current; await c; } while (c !== current); };
+  const runProcess = async () => {
     if (!src) return;
     clearSmooth();
     const id = ++job;
@@ -199,6 +203,7 @@ export function openImport(root: HTMLElement, store: Store, onDone: (id: string)
   };
   q<HTMLButtonElement>('[data-testid=reset-crop]').onclick = () => { clearSmooth(); crop = { x0: 0, y0: 0, x1: 1, y1: 1 }; syncCrop(); };
   smoothBtn.onclick = async () => {
+    await settled();
     if (!line) return;
     if (smoothSvg) { clearSmooth(); return; }
     busy.hidden = false;
@@ -236,8 +241,9 @@ export function openImport(root: HTMLElement, store: Store, onDone: (id: string)
 
   q<HTMLButtonElement>('[data-testid=save-import]').onclick = async (e) => {
     const btn = e.currentTarget as HTMLButtonElement;
-    if (!line) return;
     btn.disabled = true;
+    await settled();
+    if (!line) { btn.disabled = false; return; }
     try {
       const box = cropBox(line);
       let level = levelIn.value as Level | 'auto';
