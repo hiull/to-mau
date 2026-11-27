@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000" viewBox="0 0 1000 1000">
+<rect width="1000" height="1000" fill="#fff"/>
+<g fill="none" stroke="#000" stroke-width="8" stroke-linejoin="round" stroke-linecap="round">
+<circle cx="850" cy="140" r="70"/>
+<ellipse cx="200" cy="140" rx="90" ry="40"/>
+<ellipse cx="280" cy="120" rx="70" ry="45"/>
+<path d="M150 560 L850 560 L760 720 L240 720Z"/>
+<line x1="185" y1="610" x2="815" y2="610"/>
+<line x1="215" y1="665" x2="785" y2="665"/>
+<rect x="260" y="420" width="480" height="140"/>
+<circle cx="330" cy="490" r="28"/>
+<circle cx="430" cy="490" r="28"/>
+<circle cx="530" cy="490" r="28"/>
+<circle cx="630" cy="490" r="28"/>
+<rect x="340" y="270" width="90" height="150"/>
+<rect x="560" y="270" width="90" height="150"/>
+<line x1="340" y1="320" x2="430" y2="320"/>
+<line x1="560" y1="320" x2="650" y2="320"/>
+<line x1="500" y1="420" x2="500" y2="230"/>
+<polygon points="500,230 600,260 500,290"/>
+<path d="M0 760 Q125 720 250 760 T500 760 T750 760 T1000 760"/>
+<path d="M0 840 Q125 800 250 840 T500 840 T750 840 T1000 840"/>
+<path d="M0 920 Q125 880 250 920 T500 920 T750 920 T1000 920"/>
+<polyline points="680,200 700,180 720,200"/>
+<polyline points="730,240 750,220 770,240"/>
+</g>
+</svg>

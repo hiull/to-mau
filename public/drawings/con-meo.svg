@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000" viewBox="0 0 1000 1000">
+<rect width="1000" height="1000" fill="#fff"/>
+<g fill="none" stroke="#000" stroke-width="8" stroke-linejoin="round" stroke-linecap="round">
+<ellipse cx="520" cy="700" rx="230" ry="190"/>
+<path d="M720 760 C860 760 900 620 860 520 C850 500 830 505 835 530 C860 640 820 720 720 720"/>
+<line x1="450" y1="520" x2="470" y2="880"/>
+<line x1="570" y1="520" x2="560" y2="880"/>
+<line x1="660" y1="560" x2="640" y2="860"/>
+<ellipse cx="420" cy="880" rx="70" ry="35"/>
+<ellipse cx="620" cy="880" rx="70" ry="35"/>
+<circle cx="470" cy="380" r="190"/>
+<polygon points="320,280 300,110 430,210"/>
+<polygon points="340,250 330,160 400,215"/>
+<polygon points="620,280 640,110 510,210"/>
+<polygon points="600,250 610,160 540,215"/>
+<ellipse cx="400" cy="360" rx="40" ry="55"/>
+<ellipse cx="400" cy="370" rx="18" ry="35"/>
+<ellipse cx="540" cy="360" rx="40" ry="55"/>
+<ellipse cx="540" cy="370" rx="18" ry="35"/>
+<polygon points="450,440 490,440 470,465"/>
+<path d="M470 465 Q440 510 410 485"/>
+<path d="M470 465 Q500 510 530 485"/>
+<line x1="280" y1="440" x2="380" y2="450"/>
+<line x1="280" y1="480" x2="380" y2="470"/>
+<line x1="660" y1="440" x2="560" y2="450"/>
+<line x1="660" y1="480" x2="560" y2="470"/>
+<path d="M340 540 Q470 600 600 540 L600 580 Q470 640 340 580Z"/>
+<circle cx="470" cy="620" r="30"/>
+<line x1="440" y1="620" x2="500" y2="620"/>
+</g>
+</svg>

@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000" viewBox="0 0 1000 1000">
+<rect width="1000" height="1000" fill="#fff"/>
+<g fill="none" stroke="#000" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+<circle cx="780" cy="170" r="70"/>
+<line x1="865" y1="170" x2="900" y2="170"/>
+<line x1="853.6" y1="212.5" x2="883.9" y2="230"/>
+<line x1="822.5" y1="243.6" x2="840" y2="273.9"/>
+<line x1="780" y1="255" x2="780" y2="290"/>
+<line x1="737.5" y1="243.6" x2="720" y2="273.9"/>
+<line x1="706.4" y1="212.5" x2="676.1" y2="230"/>
+<line x1="695" y1="170" x2="660" y2="170"/>
+<line x1="706.4" y1="127.5" x2="676.1" y2="110"/>
+<line x1="737.5" y1="96.4" x2="720" y2="66.1"/>
+<line x1="780" y1="85" x2="780" y2="50"/>
+<line x1="822.5" y1="96.4" x2="840" y2="66.1"/>
+<line x1="853.6" y1="127.5" x2="883.9" y2="110"/>
+<ellipse cx="250" cy="130" rx="80" ry="35"/>
+<ellipse cx="320" cy="110" rx="70" ry="40"/>
+<ellipse cx="500" cy="200" rx="90" ry="30"/>
+<polygon points="0,620 220,280 440,620"/>
+<polygon points="220,280 180,380 220,360 260,390"/>
+<line x1="220" y1="280" x2="250" y2="620"/>
+<polygon points="300,620 560,220 820,620"/>
+<polygon points="560,220 510,330 560,300 610,340"/>
+<line x1="560" y1="220" x2="600" y2="620"/>
+<polygon points="640,620 860,330 1000,520 1000,620"/>
+<polygon points="860,330 820,410 860,395 900,420"/>
+<line x1="860" y1="330" x2="880" y2="620"/>
+<line x1="0" y1="620" x2="1000" y2="620"/>
+<path d="M80 700 Q500 680 920 700"/>
+<path d="M120 750 Q500 730 880 750"/>
+<path d="M160 800 Q500 780 840 800"/>
+<path d="M200 850 Q500 830 800 850"/>
+<path d="M240 900 Q500 880 760 900"/>
+<rect x="24" y="710" width="12" height="30"/>
+<polygon points="-10,710 30,660 70,710"/>
+<polygon points="-2,680 30,635 62,680"/>
+<polygon points="6,650 30,610 54,650"/>
+<rect x="54" y="800" width="12" height="30"/>
+<polygon points="20,800 60,750 100,800"/>
+<polygon points="28,770 60,725 92,770"/>
+<polygon points="36,740 60,700 84,740"/>
+<rect x="84" y="890" width="12" height="30"/>
+<polygon points="50,890 90,840 130,890"/>
+<polygon points="58,860 90,815 122,860"/>
+<polygon points="66,830 90,790 114,830"/>
+<rect x="114" y="710" width="12" height="30"/>
+<polygon points="80,710 120,660 160,710"/>
+<polygon points="88,680 120,635 152,680"/>
+<polygon points="96,650 120,610 144,650"/>
+<rect x="144" y="800" width="12" height="30"/>
+<polygon points="110,800 150,750 190,800"/>
+<polygon points="118,770 150,725 182,770"/>
+<polygon points="126,740 150,700 174,740"/>
+<rect x="174" y="890" width="12" height="30"/>
+<polygon points="140,890 180,840 220,890"/>
+<polygon points="148,860 180,815 212,860"/>
+<polygon points="156,830 180,790 204,830"/>
+<rect x="754" y="710" width="12" height="30"/>
+<polygon points="720,710 760,660 800,710"/>
+<polygon points="728,680 760,635 792,680"/>
+<polygon points="736,650 760,610 784,650"/>
+<rect x="794" y="800" width="12" height="30"/>
+<polygon points="760,800 800,750 840,800"/>
+<polygon points="768,770 800,725 832,770"/>
+<polygon points="776,740 800,700 824,740"/>
+<rect x="834" y="890" width="12" height="30"/>
+<polygon points="800,890 840,840 880,890"/>
+<polygon points="808,860 840,815 872,860"/>
+<polygon points="816,830 840,790 864,830"/>
+<rect x="874" y="710" width="12" height="30"/>
+<polygon points="840,710 880,660 920,710"/>
+<polygon points="848,680 880,635 912,680"/>
+<polygon points="856,650 880,610 904,650"/>
+<rect x="914" y="800" width="12" height="30"/>
+<polygon points="880,800 920,750 960,800"/>
+<polygon points="888,770 920,725 952,770"/>
+<polygon points="896,740 920,700 944,740"/>
+<rect x="954" y="890" width="12" height="30"/>
+<polygon points="920,890 960,840 1000,890"/>
+<polygon points="928,860 960,815 992,860"/>
+<polygon points="936,830 960,790 984,830"/>
+<polyline points="100,300 115,285 130,300"/>
+<polyline points="150,330 165,315 180,330"/>
+<polyline points="200,300 215,285 230,300"/>
+<polyline points="250,330 265,315 280,330"/>
+<polyline points="300,300 315,285 330,300"/>
+<polyline points="350,330 365,315 380,330"/>
+<polyline points="400,300 415,285 430,300"/>
+<polyline points="450,330 465,315 480,330"/>
+</g>
+</svg>

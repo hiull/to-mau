@@ -3,6 +3,8 @@ import { registerSW } from 'virtual:pwa-register';
 import { openStore, type Store } from './storage/db';
 import { openEditor, type EditorSource } from './ui/editor-view';
 import { FIXTURE_SVG } from './ui/fixture';
+import { openLibrary } from './ui/library-view';
+import { drawingBlob, loadCatalog } from './library/catalog';
 
 registerSW({ immediate: true });
 
@@ -13,6 +15,10 @@ const getStore = () => (storePromise ??= openStore());
 
 async function resolveSource(id: string): Promise<EditorSource | null> {
   if (id === '__fixture') return { kind: 'svg', data: new Blob([FIXTURE_SVG], { type: 'image/svg+xml' }), id, name: 'Hình thử' };
+  const entry = (await loadCatalog()).find((e) => e.id === id);
+  if (entry) return { kind: 'svg', data: await drawingBlob(entry), id, name: entry.name };
+  const mine = (await (await getStore()).listImages()).find((i) => i.id === id);
+  if (mine) return { kind: mine.kind, data: mine.data, id, name: mine.name };
   return null;
 }
 
@@ -29,7 +35,8 @@ async function route() {
       return;
     }
   }
-  app.textContent = 'Tô Màu';
+  if (hash !== '/') { location.replace('#/'); return; }
+  teardown = openLibrary(app, store);
 }
 
 window.addEventListener('hashchange', route);

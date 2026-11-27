@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000" viewBox="0 0 1000 1000">
+<rect width="1000" height="1000" fill="#fff"/>
+<g fill="none" stroke="#000" stroke-width="14" stroke-linejoin="round" stroke-linecap="round">
+<ellipse cx="300" cy="330" rx="130" ry="170" transform="rotate(-12 300 330)"/>
+<ellipse cx="250" cy="260" rx="22" ry="45" transform="rotate(13 250 260)"/>
+<polygon points="278,520 322,520 300,495"/>
+<path d="M300 520 C260 630 340 730 500 900"/>
+<ellipse cx="520" cy="280" rx="130" ry="170"/>
+<ellipse cx="470" cy="210" rx="22" ry="45" transform="rotate(25 470 210)"/>
+<polygon points="498,470 542,470 520,445"/>
+<path d="M520 470 C480 580 560 680 500 900"/>
+<ellipse cx="720" cy="360" rx="130" ry="170" transform="rotate(12 720 360)"/>
+<ellipse cx="670" cy="290" rx="22" ry="45" transform="rotate(37 670 290)"/>
+<polygon points="698,550 742,550 720,525"/>
+<path d="M720 550 C680 660 760 760 500 900"/>
+</g>
+</svg>

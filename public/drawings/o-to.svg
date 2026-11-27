@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000" viewBox="0 0 1000 1000">
+<rect width="1000" height="1000" fill="#fff"/>
+<g fill="none" stroke="#000" stroke-width="8" stroke-linejoin="round" stroke-linecap="round">
+<path d="M110 640 L110 520 Q120 470 200 460 L300 450 L380 330 Q400 300 450 300 L650 300 Q700 300 720 330 L800 450 L870 460 Q910 470 910 520 L910 640Z"/>
+<polygon points="320,450 400,340 500,340 500,450"/>
+<polygon points="530,450 530,340 660,340 740,450"/>
+<line x1="515" y1="450" x2="515" y2="640"/>
+<rect x="420" y="480" width="60" height="20" rx="8"/>
+<rect x="560" y="480" width="60" height="20" rx="8"/>
+<rect x="110" y="520" width="60" height="50" rx="10"/>
+<rect x="850" y="520" width="60" height="50" rx="10"/>
+<rect x="90" y="620" width="840" height="40" rx="15"/>
+<circle cx="290" cy="660" r="100"/>
+<circle cx="290" cy="660" r="55"/>
+<line x1="290" y1="660" x2="328.9" y2="698.9"/>
+<line x1="290" y1="660" x2="251.1" y2="698.9"/>
+<line x1="290" y1="660" x2="251.1" y2="621.1"/>
+<line x1="290" y1="660" x2="328.9" y2="621.1"/>
+<circle cx="730" cy="660" r="100"/>
+<circle cx="730" cy="660" r="55"/>
+<line x1="730" y1="660" x2="768.9" y2="698.9"/>
+<line x1="730" y1="660" x2="691.1" y2="698.9"/>
+<line x1="730" y1="660" x2="691.1" y2="621.1"/>
+<line x1="730" y1="660" x2="768.9" y2="621.1"/>
+<path d="M100 820 L900 820"/>
+<ellipse cx="160" cy="170" rx="90" ry="45"/>
+<ellipse cx="240" cy="150" rx="80" ry="50"/>
+<ellipse cx="780" cy="180" rx="110" ry="50"/>
+</g>
+</svg>

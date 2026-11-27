@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000" viewBox="0 0 1000 1000">
+<rect width="1000" height="1000" fill="#fff"/>
+<g fill="none" stroke="#000" stroke-width="14" stroke-linejoin="round" stroke-linecap="round">
+<circle cx="500" cy="500" r="220"/>
+<polygon points="755.8,453.5 920,500 755.8,546.5"/>
+<polygon points="713.8,648 797,797 648,713.8"/>
+<polygon points="546.5,755.8 500,920 453.5,755.8"/>
+<polygon points="352,713.8 203,797 286.2,648"/>
+<polygon points="244.2,546.5 80,500 244.2,453.5"/>
+<polygon points="286.2,352 203,203 352,286.2"/>
+<polygon points="453.5,244.2 500,80 546.5,244.2"/>
+<polygon points="648,286.2 797,203 713.8,352"/>
+<circle cx="430" cy="450" r="28"/>
+<circle cx="570" cy="450" r="28"/>
+<path d="M400 560 Q500 660 600 560 Q500 610 400 560Z"/>
+</g>
+</svg>

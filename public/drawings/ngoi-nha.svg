@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000" viewBox="0 0 1000 1000">
+<rect width="1000" height="1000" fill="#fff"/>
+<g fill="none" stroke="#000" stroke-width="14" stroke-linejoin="round" stroke-linecap="round">
+<rect x="220" y="450" width="560" height="400"/>
+<polygon points="170,460 500,170 830,460"/>
+<rect x="640" y="220" width="80" height="150"/>
+<rect x="430" y="620" width="140" height="230"/>
+<circle cx="545" cy="740" r="14"/>
+<rect x="270" y="520" width="120" height="120"/>
+<line x1="330" y1="520" x2="330" y2="640"/>
+<line x1="270" y1="580" x2="390" y2="580"/>
+<rect x="610" y="520" width="120" height="120"/>
+</g>
+</svg>
