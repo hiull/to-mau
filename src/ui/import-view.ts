@@ -5,6 +5,7 @@ import { detectEnv, workingSize } from '../core/resolution';
 import { guessLevel, guessMode, toLineArt, type ImportMode } from '../import/lineart';
 import type { Store } from '../storage/db';
 import { canvasToBlob } from './export';
+import { vectorize } from '../import/vectorize';
 
 type Crop = { x0: number; y0: number; x1: number; y1: number }; // 0..1
 
@@ -69,13 +70,14 @@ export function openImport(root: HTMLElement, store: Store, onDone: (id: string)
       <section class="work" hidden>
         <div class="preview-wrap" data-testid="import-preview">
           <canvas class="preview"></canvas>
+          <img class="preview svg-preview" alt="" hidden>
           <div class="crop"><i data-h="nw"></i><i data-h="ne"></i><i data-h="sw"></i><i data-h="se"></i></div>
           <div class="busy" hidden>Đang xử lý…</div>
         </div>
         <div class="controls">
           <div class="seg"><button data-testid="mode-drawing" data-mode="drawing">✏️ Hình vẽ nét</button><button data-testid="mode-photo" data-mode="photo">📷 Ảnh chụp</button></div>
           <label>Độ chi tiết <input type="range" min="0" max="100" value="50" data-testid="detail"></label>
-          <div class="row"><button data-testid="rotate">⟳ Xoay 90°</button><button data-testid="reset-crop">Bỏ cắt</button><button data-testid="smooth" hidden>✨ Làm mượt nét</button></div>
+          <div class="row"><button data-testid="rotate">⟳ Xoay 90°</button><button data-testid="reset-crop">Bỏ cắt</button><button data-testid="smooth">✨ Làm mượt nét</button></div>
           <label>Tên <input type="text" data-testid="import-name" maxlength="60"></label>
           <label>Cấp độ <select data-testid="import-level">
             <option value="auto">Tự động</option><option value="de">${LEVEL_NAMES.de}</option><option value="vua">${LEVEL_NAMES.vua}</option><option value="kho">${LEVEL_NAMES.kho}</option>
@@ -103,6 +105,31 @@ export function openImport(root: HTMLElement, store: Store, onDone: (id: string)
   let line: Gray | null = null;
   let crop: Crop = { x0: 0, y0: 0, x1: 1, y1: 1 };
   let job = 0;
+  let smoothSvg: string | null = null; // SVG đã làm mượt của phần được cắt; null = chưa làm mượt
+  const smoothBtn = q<HTMLButtonElement>('[data-testid=smooth]');
+  const svgPreview = q<HTMLImageElement>('.svg-preview');
+  const clearSmooth = () => {
+    smoothSvg = null;
+    smoothBtn.classList.remove('active');
+    svgPreview.hidden = true;
+    preview.hidden = false;
+    cropEl.hidden = false;
+    if (svgPreview.src) URL.revokeObjectURL(svgPreview.src);
+  };
+  const cropBox = (g: Gray) => {
+    const box = {
+      x: Math.round(crop.x0 * g.width), y: Math.round(crop.y0 * g.height),
+      w: Math.max(8, Math.round((crop.x1 - crop.x0) * g.width)), h: Math.max(8, Math.round((crop.y1 - crop.y0) * g.height)),
+    };
+    box.w = Math.min(box.w, g.width - box.x);
+    box.h = Math.min(box.h, g.height - box.y);
+    return box;
+  };
+  const cropGray = (g: Gray, b: ReturnType<typeof cropBox>): Gray => {
+    const data = new Uint8Array(b.w * b.h);
+    for (let y = 0; y < b.h; y++) data.set(g.data.subarray((y + b.y) * g.width + b.x, (y + b.y) * g.width + b.x + b.w), y * b.w);
+    return { width: b.w, height: b.h, data };
+  };
 
   const showError = (m: string) => { errEl.hidden = false; errEl.textContent = m; };
   const syncCrop = () => {
@@ -112,6 +139,7 @@ export function openImport(root: HTMLElement, store: Store, onDone: (id: string)
 
   const process = async () => {
     if (!src) return;
+    clearSmooth();
     const id = ++job;
     busy.hidden = false;
     await new Promise((r) => requestAnimationFrame(() => setTimeout(r)));
@@ -168,7 +196,20 @@ export function openImport(root: HTMLElement, store: Store, onDone: (id: string)
     syncCrop();
     void process();
   };
-  q<HTMLButtonElement>('[data-testid=reset-crop]').onclick = () => { crop = { x0: 0, y0: 0, x1: 1, y1: 1 }; syncCrop(); };
+  q<HTMLButtonElement>('[data-testid=reset-crop]').onclick = () => { clearSmooth(); crop = { x0: 0, y0: 0, x1: 1, y1: 1 }; syncCrop(); };
+  smoothBtn.onclick = async () => {
+    if (!line) return;
+    if (smoothSvg) { clearSmooth(); return; }
+    busy.hidden = false;
+    await new Promise((r) => requestAnimationFrame(() => setTimeout(r)));
+    smoothSvg = await vectorize(cropGray(line, cropBox(line)));
+    svgPreview.src = URL.createObjectURL(new Blob([smoothSvg], { type: 'image/svg+xml' }));
+    svgPreview.hidden = false;
+    preview.hidden = true;
+    cropEl.hidden = true;
+    smoothBtn.classList.add('active');
+    busy.hidden = true;
+  };
 
   // Kéo góc khung cắt
   cropEl.querySelectorAll<HTMLElement>('i').forEach((handle) => {
@@ -197,22 +238,12 @@ export function openImport(root: HTMLElement, store: Store, onDone: (id: string)
     if (!line) return;
     btn.disabled = true;
     try {
-      const box = {
-        x: Math.round(crop.x0 * line.width), y: Math.round(crop.y0 * line.height),
-        w: Math.max(8, Math.round((crop.x1 - crop.x0) * line.width)), h: Math.max(8, Math.round((crop.y1 - crop.y0) * line.height)),
-      };
-      box.w = Math.min(box.w, line.width - box.x);
-      box.h = Math.min(box.h, line.height - box.y);
-      const canvas = grayToCanvas(line, box);
+      const box = cropBox(line);
       let level = levelIn.value as Level | 'auto';
-      if (level === 'auto') {
-        const sub = canvas.getContext('2d')!.getImageData(0, 0, box.w, box.h);
-        const g = new Uint8Array(box.w * box.h);
-        for (let i = 0; i < g.length; i++) g[i] = sub.data[i * 4];
-        level = guessLevel(buildRegionMap({ width: box.w, height: box.h, data: g }).count - 1);
-      }
+      if (level === 'auto') level = guessLevel(buildRegionMap(cropGray(line, box)).count - 1);
+      const data = smoothSvg ? new Blob([smoothSvg], { type: 'image/svg+xml' }) : await canvasToBlob(grayToCanvas(line, box));
       const id = newId();
-      await store.putImage({ id, name: nameIn.value.trim() || 'Hình của tôi', level, kind: 'png', data: await canvasToBlob(canvas), createdAt: Date.now() });
+      await store.putImage({ id, name: nameIn.value.trim() || 'Hình của tôi', level, kind: smoothSvg ? 'svg' : 'png', data, createdAt: Date.now() });
       onDone(id);
     } catch (err) {
       showError('Không lưu được hình: ' + ((err as Error)?.message ?? err));

@@ -21,7 +21,6 @@
     "vitest": "^2.1.9"
   },
   "dependencies": {
-    "esm-potrace-wasm": "^0.4.4",
     "idb": "^8.0.4"
   }
 }

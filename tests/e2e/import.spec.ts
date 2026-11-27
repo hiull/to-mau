@@ -48,3 +48,25 @@ test('xoay 90° đổi chiều ảnh', async ({ page }) => {
   const [w, h] = await canvasSize(page);
   expect(h).toBeGreaterThan(w);
 });
+
+test('Làm mượt nét lưu hình dạng vector và tô được', async ({ page }) => {
+  await page.goto('./#/import');
+  await page.getByTestId('file-input').setInputFiles({ name: 'nha.png', mimeType: 'image/png', buffer: housePng() });
+  await expect(page.getByTestId('import-preview')).toBeVisible();
+  await page.getByTestId('smooth').click();
+  await expect(page.getByTestId('smooth')).toHaveClass(/active/);
+  await page.getByTestId('save-import').click();
+  await waitReady(page);
+  const kinds = await page.evaluate(async () => {
+    const r = indexedDB.open('to-mau');
+    await new Promise((x) => (r.onsuccess = x));
+    const t = r.result.transaction('images').objectStore('images').getAll();
+    await new Promise((x) => (t.onsuccess = x));
+    return t.result.map((i: { kind: string }) => i.kind);
+  });
+  expect(kinds).toEqual(['svg']);
+  const [w, h] = await canvasSize(page);
+  const [sx, sy] = await screenPoint(page, w * 0.3, h * 0.75);
+  await page.mouse.click(sx, sy);
+  expect((await colorAt(page, Math.round(w * 0.3), Math.round(h * 0.75)))[3]).toBe(255);
+});
