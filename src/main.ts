@@ -4,6 +4,7 @@ import { openStore, type Store } from './storage/db';
 import { openEditor, type EditorSource } from './ui/editor-view';
 import { FIXTURE_SVG } from './ui/fixture';
 import { openLibrary } from './ui/library-view';
+import { openImport } from './ui/import-view';
 import { drawingBlob, loadCatalog } from './library/catalog';
 
 registerSW({ immediate: true });
@@ -34,6 +35,10 @@ async function route() {
       teardown = openEditor(app, src, store, () => { location.hash = '#/'; });
       return;
     }
+  }
+  if (hash === '/import') {
+    teardown = openImport(app, store, (id) => location.replace('#/to/' + encodeURIComponent(id)), () => { location.hash = '#/'; });
+    return;
   }
   if (hash !== '/') { location.replace('#/'); return; }
   teardown = openLibrary(app, store);

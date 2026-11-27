@@ -8,8 +8,8 @@ test('thư viện hiển thị 6 hình mỗi cấp và mở được hình', asy
   await expect(page.getByTestId('tab-de')).toHaveClass(/active/);
   const firstEasy = await cards.first().textContent();
   await page.getByTestId('tab-kho').click();
+  await expect(cards.first()).not.toHaveText(firstEasy!);
   await expect(cards).toHaveCount(6);
-  expect(await cards.first().textContent()).not.toBe(firstEasy);
   await cards.first().click();
   await expect(page).toHaveURL(/#\/to\//);
   await waitReady(page);
