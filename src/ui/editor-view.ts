@@ -8,6 +8,8 @@ import type { Store } from '../storage/db';
 import { Viewport } from './viewport';
 import { createToolbar, type ToolState } from './toolbar';
 import { createPalette } from './palette';
+import { composePng, shareOrDownload } from './export';
+import { decodeLayer, encodeLayer } from '../storage/layer-codec';
 
 export type EditorSource = { kind: 'svg' | 'png'; data: Blob; id: string; name: string };
 
@@ -59,7 +61,7 @@ export type EditorContext = {
 };
 
 /** Mở màn hình tô. Trả về hàm huỷ. */
-export function openEditor(root: HTMLElement, src: EditorSource, _store: Store, onBack: () => void = () => history.back()): () => void {
+export function openEditor(root: HTMLElement, src: EditorSource, store: Store, onBack: () => void = () => history.back()): () => void {
   let destroyed = false;
   const cleanups: (() => void)[] = [];
   const el = document.createElement('div');
@@ -90,6 +92,37 @@ export function openEditor(root: HTMLElement, src: EditorSource, _store: Store, 
   loading.className = 'loading';
   loading.textContent = 'Đang chuẩn bị hình…';
   vpEl.append(stage, loading);
+
+  const resetBtn = document.createElement('button');
+  resetBtn.textContent = '🗑️';
+  resetBtn.title = 'Tô lại từ đầu';
+  resetBtn.setAttribute('aria-label', 'Tô lại từ đầu');
+  resetBtn.setAttribute('data-testid', 'reset');
+  const exportBtn = document.createElement('button');
+  exportBtn.textContent = '⤓';
+  exportBtn.title = 'Lưu ảnh';
+  exportBtn.setAttribute('aria-label', 'Lưu ảnh');
+  exportBtn.setAttribute('data-testid', 'export');
+  toolbar.actions.append(resetBtn, exportBtn);
+  const banner = document.createElement('div');
+  banner.className = 'editor-banner';
+  banner.hidden = true;
+  vpEl.append(banner);
+  const showBanner = (text: string, dismissKey?: string) => {
+    banner.hidden = false;
+    banner.textContent = text;
+    const x = document.createElement('button');
+    x.textContent = '✕';
+    x.setAttribute('aria-label', 'Đóng');
+    x.onclick = () => { banner.hidden = true; if (dismissKey) try { localStorage.setItem(dismissKey, '1'); } catch { /* bỏ qua */ } };
+    banner.append(x);
+  };
+  if (!store.available) showBanner('Không lưu được tranh trên trình duyệt này');
+  else if (detectEnv().isIOS && !(navigator as any).standalone && !matchMedia('(display-mode: standalone)').matches) {
+    let seen = false;
+    try { seen = localStorage.getItem('to-mau:ios-hint') === '1'; } catch { /* bỏ qua */ }
+    if (!seen) showBanner('Thêm vào Màn hình chính để không mất tranh', 'to-mau:ios-hint');
+  }
 
   const dock = document.createElement('div');
   dock.className = 'dock';
@@ -165,6 +198,59 @@ export function openEditor(root: HTMLElement, src: EditorSource, _store: Store, 
     const colorData = new ImageData(width, height);
     ctx = { root: el, colorCanvas, colorData, map, history: new History(30), toolbar, changed: new Set() };
     (el as any).__editor = ctx;
+
+    // Mở lại tranh đang tô dở.
+    const saved = await store.getProgress(src.id).catch(() => undefined);
+    if (destroyed) return;
+    if (saved) {
+      try {
+        let data = await decodeLayer(saved, width, height);
+        if (!data && !saved.enc) {
+          // Bản lưu dạng PNG: vẽ lại theo kích thước hiện tại.
+          const bmp = await createImageBitmap(saved.color);
+          const tmp = document.createElement('canvas');
+          tmp.width = width;
+          tmp.height = height;
+          const tctx = tmp.getContext('2d', { willReadFrequently: true })!;
+          tctx.drawImage(bmp, 0, 0, width, height);
+          data = tctx.getImageData(0, 0, width, height).data;
+        }
+        if (data) colorData.data.set(data);
+        colorCanvas.getContext('2d')!.putImageData(colorData, 0, 0);
+      } catch { /* tranh lưu hỏng hoặc khác kích thước: bắt đầu lại */ }
+    }
+
+    // Tự lưu: 1 giây sau thao tác cuối, và ngay khi rời trang.
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    let dirty = false;
+    const save = async () => {
+      if (timer) { clearTimeout(timer); timer = null; }
+      if (!dirty) return;
+      dirty = false;
+      const layer = await encodeLayer(colorData.data, width, height);
+      const thumb = await composePng(colorCanvas, img, 256, Math.round((256 * height) / width));
+      await store.putProgress({ imageId: src.id, thumb, updatedAt: Date.now(), ...layer }).catch(() => {});
+    };
+    ctx.changed.add(() => { dirty = true; if (timer) clearTimeout(timer); timer = setTimeout(save, 1000); });
+    const onHide = () => { if (document.visibilityState === 'hidden') void save(); };
+    document.addEventListener('visibilitychange', onHide);
+    window.addEventListener('pagehide', onHide);
+    cleanups.push(() => { document.removeEventListener('visibilitychange', onHide); window.removeEventListener('pagehide', onHide); void save(); });
+
+    resetBtn.onclick = async () => {
+      if (!confirm('Xoá hết màu của tranh này?')) return;
+      colorData.data.fill(0);
+      colorCanvas.getContext('2d')!.putImageData(colorData, 0, 0);
+      ctx!.history.clear();
+      toolbar.setHistory(false, false);
+      if (timer) { clearTimeout(timer); timer = null; }
+      dirty = false;
+      await store.deleteProgress(src.id).catch(() => {});
+    };
+    exportBtn.onclick = async () => {
+      const blob = await composePng(colorCanvas, img, width, height);
+      await shareOrDownload(blob, src.name);
+    };
 
     viewport = new Viewport(vpEl, stage, width, height);
     cleanups.push(() => viewport?.destroy());

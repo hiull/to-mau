@@ -2,7 +2,8 @@ import { openDB, type IDBPDatabase } from 'idb';
 import type { Level } from '../core/types';
 
 export type StoredImage = { id: string; name: string; level: Level; kind: 'svg' | 'png'; data: Blob; createdAt: number };
-export type Progress = { imageId: string; color: Blob; thumb: Blob; updatedAt: number };
+/** color: lớp màu; enc 'gz-rgba' = RGBA thô nén gzip kích thước w×h (xem layer-codec), không có enc = PNG. */
+export type Progress = { imageId: string; color: Blob; thumb: Blob; updatedAt: number; enc?: 'gz-rgba'; w?: number; h?: number };
 
 export interface Store {
   /** false nếu trình duyệt không cho lưu (dữ liệu chỉ sống trong phiên này). */

@@ -24,3 +24,20 @@ export async function canvasSize(page: Page): Promise<[number, number]> {
 export async function waitReady(page: Page) {
   await page.locator('[data-testid=editor][data-ready=true]').waitFor();
 }
+/** Chờ tới khi tiến độ của hình `id` có trong IndexedDB (tối đa 5 giây). */
+export async function waitSaved(page: Page, id: string) {
+  const deadline = Date.now() + 5000;
+  while (Date.now() < deadline) {
+    const saved = await page.evaluate(async (id) => {
+      const r = indexedDB.open('to-mau');
+      await new Promise((x) => (r.onsuccess = x));
+      const t = r.result.transaction('progress').objectStore('progress').getKey(id);
+      await new Promise((x) => (t.onsuccess = x));
+      r.result.close();
+      return t.result !== undefined;
+    }, id);
+    if (saved) return;
+    await page.waitForTimeout(200);
+  }
+  throw new Error('Tranh chưa được lưu sau 5 giây');
+}
