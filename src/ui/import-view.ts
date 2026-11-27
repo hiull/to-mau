@@ -1,11 +1,10 @@
 import type { Gray, Level } from '../core/types';
 import { LEVEL_NAMES } from '../core/types';
-import { buildRegionMap } from '../core/regions';
 import { detectEnv, workingSize } from '../core/resolution';
-import { guessLevel, guessMode, toLineArt, type ImportMode } from '../import/lineart';
+import { guessLevel, guessMode, type ImportMode } from '../import/lineart';
+import { runJob } from '../worker/client';
 import type { Store } from '../storage/db';
 import { canvasToBlob } from './export';
-import { vectorize } from '../import/vectorize';
 
 type Crop = { x0: number; y0: number; x1: number; y1: number }; // 0..1
 
@@ -145,7 +144,9 @@ export function openImport(root: HTMLElement, store: Store, onDone: (id: string)
     await new Promise((r) => requestAnimationFrame(() => setTimeout(r)));
     if (id !== job) return;
     const data = src.getContext('2d', { willReadFrequently: true })!.getImageData(0, 0, src.width, src.height);
-    line = toLineArt(data, mode, +detailIn.value);
+    const result = await runJob({ type: 'lineart', img: { width: data.width, height: data.height, data: data.data }, mode, detail: +detailIn.value });
+    if (id !== job) return;
+    line = result;
     if (id !== job) return;
     const c = grayToCanvas(line);
     preview.width = c.width;
@@ -202,7 +203,7 @@ export function openImport(root: HTMLElement, store: Store, onDone: (id: string)
     if (smoothSvg) { clearSmooth(); return; }
     busy.hidden = false;
     await new Promise((r) => requestAnimationFrame(() => setTimeout(r)));
-    smoothSvg = await vectorize(cropGray(line, cropBox(line)));
+    smoothSvg = await runJob({ type: 'vectorize', line: cropGray(line, cropBox(line)) });
     svgPreview.src = URL.createObjectURL(new Blob([smoothSvg], { type: 'image/svg+xml' }));
     svgPreview.hidden = false;
     preview.hidden = true;
@@ -240,7 +241,7 @@ export function openImport(root: HTMLElement, store: Store, onDone: (id: string)
     try {
       const box = cropBox(line);
       let level = levelIn.value as Level | 'auto';
-      if (level === 'auto') level = guessLevel(buildRegionMap(cropGray(line, box)).count - 1);
+      if (level === 'auto') level = guessLevel((await runJob({ type: 'countRegions', line: cropGray(line, box) })) - 1);
       const data = smoothSvg ? new Blob([smoothSvg], { type: 'image/svg+xml' }) : await canvasToBlob(grayToCanvas(line, box));
       const id = newId();
       await store.putImage({ id, name: nameIn.value.trim() || 'Hình của tôi', level, kind: smoothSvg ? 'svg' : 'png', data, createdAt: Date.now() });

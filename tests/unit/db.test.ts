@@ -33,6 +33,20 @@ describe('openStore', () => {
     expect(await s.getProgress('d')).toBeUndefined();
   });
 
+  it('lưu và đọc bản đồ vùng; xoá hình thì xoá luôn cache', async () => {
+    const s = await openStore();
+    const map = { width: 3, height: 2, labels: Int32Array.from([0, 0, -1, 1, 1, -1]), count: 2, areas: Uint32Array.from([2, 2]) };
+    await s.putImage(img('f'));
+    await s.putRegionCache('f:3x2', map);
+    const got = await s.getRegionCache('f:3x2');
+    expect(got?.count).toBe(2);
+    expect(Array.from(got!.labels)).toEqual([0, 0, -1, 1, 1, -1]);
+    expect(Array.from(got!.areas)).toEqual([2, 2]);
+    expect(await s.getRegionCache('f:9x9')).toBeUndefined();
+    await s.deleteImage('f');
+    expect(await s.getRegionCache('f:3x2')).toBeUndefined();
+  });
+
   it('IndexedDB lỗi → vẫn trả store tạm, available = false', async () => {
     const real = globalThis.indexedDB;
     (globalThis as any).indexedDB = { open() { throw new Error('blocked'); } };

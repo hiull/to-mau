@@ -38,3 +38,16 @@ describe('fillRegion', () => {
     expect(fillRegion(blankRGBA(50, 50), map, -1, RED)).toBeNull();
   });
 });
+
+import { flattenIndex, primeRegionIndex, regionPixelIndex } from '../../src/core/fill';
+
+describe('flattenIndex / primeRegionIndex', () => {
+  it('làm phẳng rồi nạp lại cho ra cùng chỉ mục', () => {
+    const map = buildRegionMap(squareGray());
+    const orig = regionPixelIndex(map).map((a) => Array.from(a));
+    const flat = flattenIndex(regionPixelIndex(map));
+    const map2 = { ...map };
+    primeRegionIndex(map2, flat);
+    expect(regionPixelIndex(map2).map((a) => Array.from(a))).toEqual(orig);
+  });
+});

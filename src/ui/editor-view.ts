@@ -1,5 +1,6 @@
-import { binarize, buildRegionMap, nearestRegion } from '../core/regions';
-import { fillRegion, type Patch } from '../core/fill';
+import { nearestRegion } from '../core/regions';
+import { fillRegion, primeRegionIndex, type Patch } from '../core/fill';
+import { runJob } from '../worker/client';
 import { History } from '../core/history';
 import { Stroke, eraseRegion } from '../core/brush';
 import { detectEnv, workingSize } from '../core/resolution';
@@ -181,7 +182,19 @@ export function openEditor(root: HTMLElement, src: EditorSource, store: Store, o
     const img = await loadImage(src.data);
     if (destroyed) return;
     const { width, height } = sizeFor(src, img);
-    const map = buildRegionMap(binarize(rasterLines(img, width, height)));
+    // Bản đồ vùng: lấy từ cache nếu có, không thì tính trong worker.
+    const cacheKey = `${src.id}:${width}x${height}`;
+    let map = await store.getRegionCache(cacheKey).catch(() => undefined);
+    if (destroyed) return;
+    if (map) {
+      primeRegionIndex(map, await runJob({ type: 'index', map }));
+    } else {
+      const raster = rasterLines(img, width, height);
+      const res = await runJob({ type: 'regions', rgba: { width, height, data: raster.data } });
+      map = res.map;
+      primeRegionIndex(map, res.index);
+      void store.putRegionCache(cacheKey, map).catch(() => {});
+    }
     if (destroyed) return;
 
     const paper = document.createElement('div');

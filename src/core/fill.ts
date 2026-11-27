@@ -75,3 +75,21 @@ export function applyPatch(layer: RGBA, p: Patch, dir: 'before' | 'after'): void
   const vals = p[dir];
   for (let k = 0; k < p.indices.length; k++) px[p.indices[k]] = vals[k];
 }
+
+export type FlatIndex = { flat: Uint32Array; offsets: Uint32Array };
+
+/** Gộp chỉ mục vùng thành một mảng phẳng (để chuyển giữa worker và luồng chính). */
+export function flattenIndex(index: Uint32Array[]): FlatIndex {
+  const offsets = new Uint32Array(index.length + 1);
+  for (let k = 0; k < index.length; k++) offsets[k + 1] = offsets[k] + index[k].length;
+  const flat = new Uint32Array(offsets[index.length]);
+  index.forEach((a, k) => flat.set(a, offsets[k]));
+  return { flat, offsets };
+}
+
+/** Nạp sẵn chỉ mục vùng đã tính ở nơi khác vào bộ nhớ đệm của `map`. */
+export function primeRegionIndex(map: RegionMap, { flat, offsets }: FlatIndex): void {
+  const list: Uint32Array[] = [];
+  for (let k = 0; k + 1 < offsets.length; k++) list.push(flat.subarray(offsets[k], offsets[k + 1]));
+  indexCache.set(map, list);
+}
