@@ -28,6 +28,9 @@ export class Viewport {
   private pinch: { dist: number; mid: Pt; scale: number; tx: number; ty: number } | null = null;
   private lastPan: Pt | null = null;
   private space = false;
+  /** Người dùng đã tự phóng to/kéo: khi khung đổi kích thước thì giữ nguyên góc nhìn thay vì fit() lại. */
+  private userMoved = false;
+  private lastSize: { w: number; h: number } | null = null;
   private cleanup: (() => void)[] = [];
 
   constructor(private el: HTMLElement, private stage: HTMLElement, private contentW: number, private contentH: number) {
@@ -47,18 +50,31 @@ export class Viewport {
     on(el, 'contextmenu', (e: Event) => e.preventDefault());
     on(window, 'keydown', (e: KeyboardEvent) => { if (e.code === 'Space') this.space = true; });
     on(window, 'keyup', (e: KeyboardEvent) => { if (e.code === 'Space') this.space = false; });
-    const ro = new ResizeObserver(() => this.fit());
+    const ro = new ResizeObserver(() => this.resized());
     ro.observe(el);
     this.cleanup.push(() => ro.disconnect());
-    this.fit();
+    this.fit(false);
   }
 
   destroy() { this.cleanup.forEach((f) => f()); }
 
-  /** Vừa khung, căn giữa. */
-  fit(): void {
+  private resized() {
     const r = this.el.getBoundingClientRect();
     if (!r.width || !r.height) return;
+    if (!this.userMoved || !this.lastSize) return this.fit(false);
+    // Giữ điểm nội dung ở giữa khung đứng yên.
+    this.tx += (r.width - this.lastSize.w) / 2;
+    this.ty += (r.height - this.lastSize.h) / 2;
+    this.lastSize = { w: r.width, h: r.height };
+    this.apply();
+  }
+
+  /** Vừa khung, căn giữa. */
+  fit(byUser = true): void {
+    const r = this.el.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    this.lastSize = { w: r.width, h: r.height };
+    if (byUser) this.userMoved = false;
     const pad = 16;
     const s = Math.min((r.width - pad * 2) / this.contentW, (r.height - pad * 2) / this.contentH);
     this.scale = s;
@@ -84,6 +100,7 @@ export class Viewport {
   }
 
   private zoomAt(lx: number, ly: number, s: number) {
+    this.userMoved = true;
     s = Math.min(this.maxScale, Math.max(this.minScale, s));
     this.tx = lx - ((lx - this.tx) * s) / this.scale;
     this.ty = ly - ((ly - this.ty) * s) / this.scale;
@@ -135,6 +152,7 @@ export class Viewport {
       // Giữ điểm nội dung dưới trung điểm ban đầu đi theo trung điểm hiện tại.
       const cx = (this.pinch.mid.x - this.pinch.tx) / this.pinch.scale;
       const cy = (this.pinch.mid.y - this.pinch.ty) / this.pinch.scale;
+      this.userMoved = true;
       this.scale = s;
       this.tx = mid.x - cx * s;
       this.ty = mid.y - cy * s;
@@ -142,6 +160,7 @@ export class Viewport {
       return;
     }
     if (this.panning && this.lastPan) {
+      this.userMoved = true;
       this.tx += p.x - this.lastPan.x;
       this.ty += p.y - this.lastPan.y;
       this.lastPan = p;
@@ -181,6 +200,7 @@ export class Viewport {
     if (e.ctrlKey || Math.abs(e.deltaY) >= Math.abs(e.deltaX)) {
       this.zoomAt(p.x, p.y, this.scale * Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0015)));
     } else {
+      this.userMoved = true;
       this.tx -= e.deltaX;
       this.apply();
     }

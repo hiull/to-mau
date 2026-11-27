@@ -78,10 +78,15 @@ function memoryStore(): Store {
   };
 }
 
-/** Mở kho lưu trữ. Không bao giờ throw: nếu IndexedDB hỏng thì dùng kho tạm trong bộ nhớ. */
-export async function openStore(): Promise<Store> {
+/**
+ * Mở kho lưu trữ. Không bao giờ throw và không treo: nếu IndexedDB hỏng, bị chặn (tab cũ giữ phiên
+ * bản cũ) hoặc quá `timeoutMs` thì dùng kho tạm trong bộ nhớ.
+ */
+export async function openStore(opts: { name?: string; timeoutMs?: number } = {}): Promise<Store> {
+  const { name = 'to-mau', timeoutMs = 3000 } = opts;
+  let timedOut = false;
   try {
-    const db = await openDB('to-mau', 2, {
+    const opening = openDB(name, 2, {
       upgrade(d, oldVersion) {
         if (oldVersion < 1) {
           d.createObjectStore('images', { keyPath: 'id' });
@@ -89,7 +94,14 @@ export async function openStore(): Promise<Store> {
         }
         if (oldVersion < 2) d.createObjectStore('regions', { keyPath: 'key' });
       },
+      // Tab này đang giữ phiên bản cũ mà tab khác cần nâng cấp: nhường.
+      blocking(_cur, _next, ev) { (ev.target as IDBDatabase).close(); },
     });
+    opening.then((db) => { if (timedOut) db.close(); }, () => {});
+    const db = await Promise.race([
+      opening,
+      new Promise<never>((_, rej) => setTimeout(() => { timedOut = true; rej(new Error('timeout')); }, timeoutMs)),
+    ]);
     try { void navigator.storage?.persist?.(); } catch { /* bỏ qua */ }
     return idbStore(db);
   } catch {

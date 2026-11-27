@@ -10,9 +10,13 @@ import { Viewport } from './viewport';
 import { createToolbar, type ToolState } from './toolbar';
 import { createPalette } from './palette';
 import { composePng, shareOrDownload } from './export';
-import { decodeLayer, encodeLayer } from '../storage/layer-codec';
+import { decodeLayer, encodeLayer, resampleRGBA } from '../storage/layer-codec';
+import { Autosaver } from './autosave';
 
-export type EditorSource = { kind: 'svg' | 'png'; data: Blob; id: string; name: string };
+/** version: phiên bản nội dung hình (hình có sẵn); đổi hình thì cache bản đồ vùng cũ không dùng nữa. */
+export type EditorSource = { kind: 'svg' | 'png'; data: Blob; id: string; name: string; version?: string };
+
+export const regionCacheKey = (src: EditorSource, w: number, h: number) => `${src.id}${src.version ? '@' + src.version : ''}:${w}x${h}`;
 
 export async function loadImage(blob: Blob): Promise<HTMLImageElement> {
   const url = URL.createObjectURL(blob);
@@ -61,10 +65,11 @@ export type EditorContext = {
   changed: Set<() => void>;
 };
 
-/** Mở màn hình tô. Trả về hàm huỷ. */
-export function openEditor(root: HTMLElement, src: EditorSource, store: Store, onBack: () => void = () => history.back()): () => void {
+/** Mở màn hình tô. Trả về hàm huỷ; hàm này chờ lần lưu cuối xong. */
+export function openEditor(root: HTMLElement, src: EditorSource, store: Store, onBack: () => void = () => history.back()): () => Promise<void> {
   let destroyed = false;
   const cleanups: (() => void)[] = [];
+  let finalSave: () => Promise<void> = async () => {};
   const el = document.createElement('div');
   el.className = 'editor';
   el.setAttribute('data-testid', 'editor');
@@ -183,7 +188,7 @@ export function openEditor(root: HTMLElement, src: EditorSource, store: Store, o
     if (destroyed) return;
     const { width, height } = sizeFor(src, img);
     // Bản đồ vùng: lấy từ cache nếu có, không thì tính trong worker.
-    const cacheKey = `${src.id}:${width}x${height}`;
+    const cacheKey = regionCacheKey(src, width, height);
     let map = await store.getRegionCache(cacheKey).catch(() => undefined);
     if (destroyed) return;
     if (map) {
@@ -217,7 +222,9 @@ export function openEditor(root: HTMLElement, src: EditorSource, store: Store, o
     if (destroyed) return;
     if (saved) {
       try {
-        let data = await decodeLayer(saved, width, height);
+        const dec = await decodeLayer(saved);
+        // Lưu ở độ phân giải khác (máy khác, hình đổi kích thước): co giãn cho khớp thay vì bỏ đi.
+        let data = dec ? resampleRGBA(dec.data, dec.w, dec.h, width, height) : null;
         if (!data && !saved.enc) {
           // Bản lưu dạng PNG: vẽ lại theo kích thước hiện tại.
           const bmp = await createImageBitmap(saved.color);
@@ -233,22 +240,23 @@ export function openEditor(root: HTMLElement, src: EditorSource, store: Store, o
       } catch { /* tranh lưu hỏng hoặc khác kích thước: bắt đầu lại */ }
     }
 
-    // Tự lưu: 1 giây sau thao tác cuối, và ngay khi rời trang.
-    let timer: ReturnType<typeof setTimeout> | null = null;
-    let dirty = false;
-    const save = async () => {
-      if (timer) { clearTimeout(timer); timer = null; }
-      if (!dirty) return;
-      dirty = false;
+    // Tự lưu: 1 giây sau thao tác cuối, ngay khi rời trang, và trước khi đóng màn hình tô.
+    let warned = false;
+    const saver = new Autosaver(async () => {
       const layer = await encodeLayer(colorData.data, width, height);
       const thumb = await composePng(colorCanvas, img, 256, Math.round((256 * height) / width));
-      await store.putProgress({ imageId: src.id, thumb, updatedAt: Date.now(), ...layer }).catch(() => {});
-    };
-    ctx.changed.add(() => { dirty = true; if (timer) clearTimeout(timer); timer = setTimeout(save, 1000); });
-    const onHide = () => { if (document.visibilityState === 'hidden') void save(); };
+      try {
+        await store.putProgress({ imageId: src.id, thumb, updatedAt: Date.now(), ...layer });
+      } catch {
+        if (!warned) { warned = true; showBanner('Không lưu được tranh trên trình duyệt này'); }
+      }
+    }, 1000);
+    ctx.changed.add(() => saver.markDirty());
+    const onHide = () => { if (document.visibilityState === 'hidden') void saver.flush(); };
     document.addEventListener('visibilitychange', onHide);
     window.addEventListener('pagehide', onHide);
-    cleanups.push(() => { document.removeEventListener('visibilitychange', onHide); window.removeEventListener('pagehide', onHide); void save(); });
+    cleanups.push(() => { document.removeEventListener('visibilitychange', onHide); window.removeEventListener('pagehide', onHide); });
+    finalSave = () => saver.flush();
 
     resetBtn.onclick = async () => {
       if (!confirm('Xoá hết màu của tranh này?')) return;
@@ -256,9 +264,7 @@ export function openEditor(root: HTMLElement, src: EditorSource, store: Store, o
       colorCanvas.getContext('2d')!.putImageData(colorData, 0, 0);
       ctx!.history.clear();
       toolbar.setHistory(false, false);
-      if (timer) { clearTimeout(timer); timer = null; }
-      dirty = false;
-      await store.deleteProgress(src.id).catch(() => {});
+      await saver.reset(() => store.deleteProgress(src.id).catch(() => {}));
     };
     exportBtn.onclick = async () => {
       const blob = await composePng(colorCanvas, img, width, height);
@@ -323,9 +329,10 @@ export function openEditor(root: HTMLElement, src: EditorSource, store: Store, o
     loading.textContent = 'Không mở được hình: ' + (err?.message ?? err);
   });
 
-  return () => {
+  return async () => {
     destroyed = true;
     cleanups.forEach((f) => f());
+    await finalSave();
   };
 }
 

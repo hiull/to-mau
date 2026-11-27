@@ -47,6 +47,20 @@ describe('openStore', () => {
     expect(await s.getRegionCache('f:3x2')).toBeUndefined();
   });
 
+  it('mở DB bị treo (nâng cấp bị chặn) → hết thời gian thì dùng kho tạm', async () => {
+    // Một tab cũ giữ kết nối phiên bản 1 và không chịu đóng → nâng cấp lên phiên bản mới bị chặn.
+    const old = await new Promise<IDBDatabase>((res) => {
+      const r = indexedDB.open('to-mau-blocked', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('images', { keyPath: 'id' });
+      r.onsuccess = () => res(r.result);
+    });
+    const t = Date.now();
+    const s = await openStore({ name: 'to-mau-blocked', timeoutMs: 100 });
+    expect(s.available).toBe(false);
+    expect(Date.now() - t).toBeLessThan(1000);
+    old.close();
+  });
+
   it('IndexedDB lỗi → vẫn trả store tạm, available = false', async () => {
     const real = globalThis.indexedDB;
     (globalThis as any).indexedDB = { open() { throw new Error('blocked'); } };

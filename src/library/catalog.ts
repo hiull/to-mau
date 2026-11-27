@@ -1,6 +1,7 @@
 import type { Level } from '../core/types';
 
-export type CatalogEntry = { id: string; name: string; level: Level; file: string };
+/** v: 8 ký tự đầu SHA-1 nội dung file, đổi khi hình được sửa. */
+export type CatalogEntry = { id: string; name: string; level: Level; file: string; v: string };
 
 const BASE = import.meta.env.BASE_URL + 'drawings/';
 let cache: Promise<CatalogEntry[]> | null = null;

@@ -1,5 +1,6 @@
 // Tạo các hình tô màu có sẵn trong public/drawings/. Chạy: node scripts/gen-drawings.mjs
 import { writeFileSync, mkdirSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 
 const OUT = 'public/drawings/';
 mkdirSync(OUT, { recursive: true });
@@ -279,7 +280,7 @@ add('ran-san-ho', 'Rạn san hô', 'kho', 4, [
 
 const catalog = drawings.map(({ svg: s, ...e }) => {
   writeFileSync(OUT + e.file, s);
-  return e;
+  return { ...e, v: createHash('sha1').update(s).digest('hex').slice(0, 8) };
 });
 writeFileSync(OUT + 'catalog.json', JSON.stringify(catalog, null, 2) + '\n');
 console.log(`Đã tạo ${catalog.length} hình.`);

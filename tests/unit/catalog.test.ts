@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { Resvg } from '@resvg/resvg-js';
 import { binarize, buildRegionMap } from '../../src/core/regions';
 import type { Level } from '../../src/core/types';
 
-type Entry = { id: string; name: string; level: Level; file: string };
+type Entry = { id: string; name: string; level: Level; file: string; v: string };
 const dir = 'public/drawings/';
 const catalog: Entry[] = JSON.parse(readFileSync(dir + 'catalog.json', 'utf8'));
 const RANGE: Record<Level, [number, number]> = { de: [5, 15], vua: [20, 60], kho: [100, Infinity] };
@@ -20,6 +21,10 @@ describe('catalog', () => {
   it('có 6 hình mỗi cấp, id không trùng', () => {
     for (const lv of ['de', 'vua', 'kho'] as Level[]) expect(catalog.filter((e) => e.level === lv)).toHaveLength(6);
     expect(new Set(catalog.map((e) => e.id)).size).toBe(catalog.length);
+  });
+
+  it('mỗi hình có phiên bản v = 8 ký tự đầu SHA-1 của nội dung file', () => {
+    for (const e of catalog) expect(e.v, e.file).toBe(createHash('sha1').update(readFileSync(dir + e.file)).digest('hex').slice(0, 8));
   });
 
   for (const e of catalog) {

@@ -3,108 +3,126 @@
     "id": "qua-tao",
     "name": "Quả táo",
     "level": "de",
-    "file": "qua-tao.svg"
+    "file": "qua-tao.svg",
+    "v": "9448228b"
   },
   {
     "id": "con-ca",
     "name": "Con cá",
     "level": "de",
-    "file": "con-ca.svg"
+    "file": "con-ca.svg",
+    "v": "e421f2be"
   },
   {
     "id": "ngoi-nha",
     "name": "Ngôi nhà",
     "level": "de",
-    "file": "ngoi-nha.svg"
+    "file": "ngoi-nha.svg",
+    "v": "32b314db"
   },
   {
     "id": "mat-troi",
     "name": "Mặt trời",
     "level": "de",
-    "file": "mat-troi.svg"
+    "file": "mat-troi.svg",
+    "v": "ee7def75"
   },
   {
     "id": "bong-bay",
     "name": "Bóng bay",
     "level": "de",
-    "file": "bong-bay.svg"
+    "file": "bong-bay.svg",
+    "v": "c449e42c"
   },
   {
     "id": "ngoi-sao",
     "name": "Ngôi sao",
     "level": "de",
-    "file": "ngoi-sao.svg"
+    "file": "ngoi-sao.svg",
+    "v": "56db2c78"
   },
   {
     "id": "con-meo",
     "name": "Con mèo",
     "level": "vua",
-    "file": "con-meo.svg"
+    "file": "con-meo.svg",
+    "v": "959c64a4"
   },
   {
     "id": "o-to",
     "name": "Ô tô",
     "level": "vua",
-    "file": "o-to.svg"
+    "file": "o-to.svg",
+    "v": "6f23fc54"
   },
   {
     "id": "bong-hoa",
     "name": "Bông hoa",
     "level": "vua",
-    "file": "bong-hoa.svg"
+    "file": "bong-hoa.svg",
+    "v": "0c11c00b"
   },
   {
     "id": "con-buom",
     "name": "Con bướm",
     "level": "vua",
-    "file": "con-buom.svg"
+    "file": "con-buom.svg",
+    "v": "85418c00"
   },
   {
     "id": "khu-vuon",
     "name": "Khu vườn",
     "level": "vua",
-    "file": "khu-vuon.svg"
+    "file": "khu-vuon.svg",
+    "v": "25ff654e"
   },
   {
     "id": "tau-thuy",
     "name": "Tàu thuỷ",
     "level": "vua",
-    "file": "tau-thuy.svg"
+    "file": "tau-thuy.svg",
+    "v": "b0903f96"
   },
   {
     "id": "mandala-sen",
     "name": "Mandala hoa sen",
     "level": "kho",
-    "file": "mandala-sen.svg"
+    "file": "mandala-sen.svg",
+    "v": "fac1a3ba"
   },
   {
     "id": "mandala-hinh-hoc",
     "name": "Mandala hình học",
     "level": "kho",
-    "file": "mandala-hinh-hoc.svg"
+    "file": "mandala-hinh-hoc.svg",
+    "v": "c87e582e"
   },
   {
     "id": "phong-canh-nui",
     "name": "Phong cảnh núi",
     "level": "kho",
-    "file": "phong-canh-nui.svg"
+    "file": "phong-canh-nui.svg",
+    "v": "cc843b3e"
   },
   {
     "id": "con-cong",
     "name": "Con công",
     "level": "kho",
-    "file": "con-cong.svg"
+    "file": "con-cong.svg",
+    "v": "f59d5437"
   },
   {
     "id": "thanh-pho",
     "name": "Thành phố",
     "level": "kho",
-    "file": "thanh-pho.svg"
+    "file": "thanh-pho.svg",
+    "v": "f6148d79"
   },
   {
     "id": "ran-san-ho",
     "name": "Rạn san hô",
     "level": "kho",
-    "file": "ran-san-ho.svg"
+    "file": "ran-san-ho.svg",
+    "v": "72d8690d"
   }
 ]
